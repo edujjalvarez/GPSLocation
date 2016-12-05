@@ -4,8 +4,51 @@
              xmlns:local="clr-namespace:GPSLocation"
              x:Class="GPSLocation.MainPage">
 
-  <Label Text="Bienvenido a Xamarin Forms!"
+  <!--<Label Text="Bienvenido a Xamarin Forms!"
            VerticalOptions="Center"
-           HorizontalOptions="Center" />
+           HorizontalOptions="Center" />-->
+
+  <StackLayout Spacing="0" Padding="0" BackgroundColor="Purple">
+    <!-- Contenedor del indicador del resultado de la búsqueda GPS. -->
+    <StackLayout HeightRequest="100">
+      <!--<Label Text="La imágen tiene que aparecer abajo"></Label>-->
+      <!--<Image Source="icon.png"></Image>-->
+      <Image IsVisible="True" HeightRequest="100">
+        <Image.Source>
+          <OnPlatform x:TypeArguments="ImageSource">
+            <OnPlatform.Android>
+              <FileImageSource File="sred.png" />
+            </OnPlatform.Android>
+            <OnPlatform.iOS>
+              <FileImageSource File="sred.png" />
+            </OnPlatform.iOS>
+            <OnPlatform.WinPhone>
+              <FileImageSource File="sred.png" />
+            </OnPlatform.WinPhone>
+          </OnPlatform>
+        </Image.Source>
+      </Image>
+    </StackLayout>
+
+    <!-- Contenedor de los botones para iniciar y detener la búsqueda. -->
+    <StackLayout Orientation="Horizontal" HeightRequest="50" BackgroundColor="White" Padding="5">
+      <StackLayout Spacing="0" BackgroundColor="White" Orientation="Horizontal" HorizontalOptions="Start">
+        <Button BackgroundColor="Blue" TextColor="White" WidthRequest="100" HeightRequest="40"  HorizontalOptions="StartAndExpand" VerticalOptions="Center" Text="Iniciar" Command="Binding StartSearchGPS"></Button>
+      </StackLayout>
+      <StackLayout Spacing="0" BackgroundColor="White" Orientation="Horizontal" HorizontalOptions="EndAndExpand">
+        <Button BackgroundColor="Blue" TextColor="White" WidthRequest="100" HeightRequest="40" HorizontalOptions="Start" VerticalOptions="Center" Text="Detener" Command="Binding StopSearchGPS"></Button>
+      </StackLayout>
+    </StackLayout>
+
+    <!-- Contenedor del resultado de la búsqueda (Latitud, Longitud y Presición) -->
+    <StackLayout Orientation="Vertical" BackgroundColor="Gray" Padding="5">
+      <Label Text="Longitud(X):" HorizontalOptions="Center"></Label>
+      <Label x:Name="LblLng" HorizontalOptions="Center"></Label>
+      <Label Text="Latitud(Y):" HorizontalOptions="Center"></Label>
+      <Label x:Name="LblLat" HorizontalOptions="Center"></Label>
+    </StackLayout>
+  </StackLayout>
+
+  
 
 </ContentPage>
