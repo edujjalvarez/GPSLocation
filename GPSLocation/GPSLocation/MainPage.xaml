@@ -33,19 +33,21 @@
     <!-- Contenedor de los botones para iniciar y detener la búsqueda. -->
     <StackLayout Orientation="Horizontal" HeightRequest="50" BackgroundColor="White" Padding="5">
       <StackLayout Spacing="0" BackgroundColor="White" Orientation="Horizontal" HorizontalOptions="Start">
-        <Button BackgroundColor="Blue" TextColor="White" WidthRequest="100" HeightRequest="40"  HorizontalOptions="StartAndExpand" VerticalOptions="Center" Text="Iniciar" Command="Binding StartSearchGPS"></Button>
+        <Button BackgroundColor="Blue" TextColor="White" WidthRequest="100" HeightRequest="40"  HorizontalOptions="StartAndExpand" VerticalOptions="Center" Text="Iniciar" Command="{Binding StartSearchGPSCommand}"></Button>
       </StackLayout>
       <StackLayout Spacing="0" BackgroundColor="White" Orientation="Horizontal" HorizontalOptions="EndAndExpand">
-        <Button BackgroundColor="Blue" TextColor="White" WidthRequest="100" HeightRequest="40" HorizontalOptions="Start" VerticalOptions="Center" Text="Detener" Command="Binding StopSearchGPS"></Button>
+        <Button BackgroundColor="Blue" TextColor="White" WidthRequest="100" HeightRequest="40" HorizontalOptions="Start" VerticalOptions="Center" Text="Detener"></Button>
       </StackLayout>
     </StackLayout>
 
     <!-- Contenedor del resultado de la búsqueda (Latitud, Longitud y Presición) -->
     <StackLayout Orientation="Vertical" BackgroundColor="Gray" Padding="5">
-      <Label Text="Longitud(X):" HorizontalOptions="Center"></Label>
-      <Label x:Name="LblLng" HorizontalOptions="Center"></Label>
-      <Label Text="Latitud(Y):" HorizontalOptions="Center"></Label>
-      <Label x:Name="LblLat" HorizontalOptions="Center"></Label>
+      <Label Text="Longitud (X):" HorizontalOptions="Center"></Label>
+      <Label x:Name="LblLng" Text="{Binding LngX}" HorizontalOptions="Center"></Label>
+      <Label Text="Latitud (Y):" HorizontalOptions="Center"></Label>
+      <Label x:Name="LblLat" Text="{Binding LatY}" HorizontalOptions="Center"></Label>
+      <Label Text="Precisión (Metros):" HorizontalOptions="Center"></Label>
+      <Label x:Name="LblAccuracy" Text="{Binding Accuracy}" HorizontalOptions="Center"></Label>
     </StackLayout>
   </StackLayout>
 
