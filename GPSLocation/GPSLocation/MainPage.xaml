@@ -8,12 +8,12 @@
            VerticalOptions="Center"
            HorizontalOptions="Center" />-->
 
-  <StackLayout Spacing="0" Padding="0" BackgroundColor="Purple">
+  <StackLayout Spacing="0" Padding="20" BackgroundColor="#1977D4">
     <!-- Contenedor del indicador del resultado de la búsqueda GPS. -->
     <StackLayout HeightRequest="100">
       <!--<Label Text="La imágen tiene que aparecer abajo"></Label>-->
-      <!--<Image Source="icon.png"></Image>-->
-      <Image IsVisible="True" HeightRequest="100">
+      <Image IsVisible="True" HeightRequest="100" Source="{Binding ImageIndicator}"></Image>
+      <!--<Image IsVisible="True" HeightRequest="100">
         <Image.Source>
           <OnPlatform x:TypeArguments="ImageSource">
             <OnPlatform.Android>
@@ -27,31 +27,34 @@
             </OnPlatform.WinPhone>
           </OnPlatform>
         </Image.Source>
-      </Image>
+      </Image>-->
     </StackLayout>
 
     <!-- Contenedor de los botones para iniciar y detener la búsqueda. -->
-    <StackLayout Orientation="Horizontal" HeightRequest="50" BackgroundColor="White" Padding="5">
-      <StackLayout Spacing="0" BackgroundColor="White" Orientation="Horizontal" HorizontalOptions="Start">
-        <Button BackgroundColor="Blue" TextColor="White" WidthRequest="100" HeightRequest="40"  HorizontalOptions="StartAndExpand" VerticalOptions="Center" Text="Iniciar" Command="{Binding StartSearchGPSCommand}"></Button>
+    <StackLayout Orientation="Horizontal" HeightRequest="50" BackgroundColor="Transparent" Padding="5">
+      <StackLayout Spacing="0" BackgroundColor="Transparent" Orientation="Horizontal" HorizontalOptions="Start">
+        <Button BackgroundColor="#E71F63" TextColor="White" IsEnabled="{Binding IsEnableStartButton}" WidthRequest="100" HeightRequest="40"  HorizontalOptions="StartAndExpand" VerticalOptions="Center" Text="Iniciar" Command="{Binding StartSearchGPSCommand}"></Button>
       </StackLayout>
-      <StackLayout Spacing="0" BackgroundColor="White" Orientation="Horizontal" HorizontalOptions="EndAndExpand">
-        <Button BackgroundColor="Blue" TextColor="White" WidthRequest="100" HeightRequest="40" HorizontalOptions="Start" VerticalOptions="Center" Text="Detener"></Button>
+      <StackLayout Spacing="0" BackgroundColor="Transparent" Orientation="Horizontal" HorizontalOptions="EndAndExpand">
+        <Button BackgroundColor="#E71F63" TextColor="White" IsEnabled="{Binding IsEnableStopButton}" WidthRequest="100" HeightRequest="40" HorizontalOptions="Start" VerticalOptions="Center" Text="Detener" Command="{Binding StopSearchGPSCommand}"></Button>
       </StackLayout>
+    </StackLayout>
+
+    <!-- Contenedor de la barra de progreso de la búsqueda -->
+    <StackLayout Margin="10" Orientation="Vertical" BackgroundColor="Transparent" Padding="5">
+      <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"></ActivityIndicator>
+      <Label Text="Deteniendo búsqueda..." IsVisible="{Binding IsStoppedGPSSearch}" HorizontalOptions="Center" TextColor="White"></Label>
     </StackLayout>
 
     <!-- Contenedor del resultado de la búsqueda (Latitud, Longitud y Presición) -->
-    <StackLayout Orientation="Vertical" BackgroundColor="Gray" Padding="5">
-      <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"></ActivityIndicator>
-      <Label Text="Longitud (X):" HorizontalOptions="Center"></Label>
-      <Label x:Name="LblLng" Text="{Binding LngX}" HorizontalOptions="Center"></Label>
-      <Label Text="Latitud (Y):" HorizontalOptions="Center"></Label>
-      <Label x:Name="LblLat" Text="{Binding LatY}" HorizontalOptions="Center"></Label>
-      <Label Text="Precisión (Metros):" HorizontalOptions="Center"></Label>
-      <Label x:Name="LblAccuracy" Text="{Binding Accuracy}" HorizontalOptions="Center"></Label>
+    <StackLayout Margin="10" Orientation="Vertical" BackgroundColor="Gray" Padding="5">
+      <Label Text="Longitud (X):" HorizontalOptions="Center" TextColor="White" FontAttributes="Bold"></Label>
+      <Label x:Name="LblLng" Text="{Binding LngX}" HorizontalOptions="Center" TextColor="White"></Label>
+      <Label Text="Latitud (Y):" HorizontalOptions="Center" TextColor="White" FontAttributes="Bold"></Label>
+      <Label x:Name="LblLat" Text="{Binding LatY}" HorizontalOptions="Center" TextColor="White"></Label>
+      <Label Text="Precisión (Metros):" HorizontalOptions="Center" TextColor="White" FontAttributes="Bold"></Label>
+      <Label x:Name="LblAccuracy" Text="{Binding Accuracy}" HorizontalOptions="Center" TextColor="White"></Label>
     </StackLayout>
   </StackLayout>
-
-  
 
 </ContentPage>

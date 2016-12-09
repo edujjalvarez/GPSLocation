@@ -23,12 +23,12 @@ namespace GPSLocation.Utils
             set { AppSettings.AddOrUpdateValue<int>(DesiredAccuracyKey, value); }
         }
 
-        private const string MaxSearchTimeInMinutesKey = "maxsearchtimeinminutes_key";
-        private static readonly int MaxSearchTimeInMinutesDefault = 3;
-        public static int MaxSearchTimeInMinutes
+        private const string SearchTimeInMinutesKey = "searchtimeinminutes_key";
+        private static readonly int SearchTimeInMinutesDefault = 1;
+        public static int SearchTimeInMinutes
         {
-            get { return AppSettings.GetValueOrDefault<int>(MaxSearchTimeInMinutesKey, MaxSearchTimeInMinutesDefault); }
-            set { AppSettings.AddOrUpdateValue<int>(MaxSearchTimeInMinutesKey, value); }
+            get { return AppSettings.GetValueOrDefault<int>(SearchTimeInMinutesKey, SearchTimeInMinutesDefault); }
+            set { AppSettings.AddOrUpdateValue<int>(SearchTimeInMinutesKey, value); }
         }
 
         private const string UpdateIntervalInSecondsKey = "updateintervalinseconds_key";
