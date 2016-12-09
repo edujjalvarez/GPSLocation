@@ -4,6 +4,8 @@
              xmlns:local="clr-namespace:GPSLocation"
              x:Class="GPSLocation.MainPage">
 
+  <!-- ESTA ES LA VERSION DE DESARROLLO (Branch develop) -->
+
   <!--<Label Text="Bienvenido a Xamarin Forms!"
            VerticalOptions="Center"
            HorizontalOptions="Center" />-->
