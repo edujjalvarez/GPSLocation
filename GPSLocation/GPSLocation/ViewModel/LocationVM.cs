@@ -12,6 +12,8 @@ namespace GPSLocation.ViewModel
 {
     public class LocationVM : ObservableBaseObject
     {
+        private static string _tag = "LocationVM";
+
         private double lngX;
         public double LngX
         {
@@ -51,13 +53,20 @@ namespace GPSLocation.ViewModel
             if (!IsBusy)
             {
                 IsBusy = true;
-                System.Diagnostics.Debug.WriteLine("Precisión deseada: " + Settings.DesiredAccuracy);
+                int precision = Settings.DesiredAccuracy;
+                Log.GetInstance().Print(_tag, "GetGPS() >>> Precisión deseada = {0}", precision);
                 var locator = CrossGeolocator.Current;
-                locator.DesiredAccuracy = Settings.DesiredAccuracy;
-                var position = await locator.GetPositionAsync(1000000);
-                LngX = position.Longitude;
-                LatY = position.Latitude;
-                Accuracy = position.Accuracy;
+                locator.DesiredAccuracy = precision;
+                var tSeconds = Settings.MaxSearchTimeInMinutes*60;
+                var tMax = DateTime.Now.Second + tSeconds;
+                var updateInterval = Settings.UpdateInterval;
+                while (DateTime.Now.Second < tMax)
+                {
+                    var position = await locator.GetPositionAsync(1000000);
+                    LngX = position.Longitude;
+                    LatY = position.Latitude;
+                    Accuracy = position.Accuracy;
+                }
                 IsBusy = false;
             }
         }
