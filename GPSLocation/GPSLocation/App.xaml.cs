@@ -13,7 +13,8 @@ namespace GPSLocation
         {
             InitializeComponent();
 
-            MainPage = new GPSLocation.MainPage();
+            //MainPage = new GPSLocation.MainPage();
+            MainPage = new NavigationPage(new GPSLocation.MainPage());
         }
 
         protected override void OnStart()

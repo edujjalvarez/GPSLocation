@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GPSLocation.View.SettingsPage"
+             BackgroundColor="#1977D4"
+             Title="Ajustes"
+             >
+  <StackLayout Margin="10" Orientation="Vertical" BackgroundColor="Transparent" Padding="5">
+    <Label Text="Tiempo de búsqueda (Minutos):" TextColor="White" FontAttributes="Bold"></Label>
+    <Entry Margin="10,0,0,10" x:Name="TxtSearchTime" Text="{Binding SearchTime}" Keyboard="Numeric"></Entry>
+    <Label Text="Precisión (Metros):"  TextColor="White" FontAttributes="Bold"></Label>
+    <Entry Margin="10,0,0,10" x:Name="TxtAccuracy" Text="{Binding Accuracy}" Keyboard="Numeric"></Entry>
+    <Button BackgroundColor="#E71F63" TextColor="White" Text="Guardar Cambios" HorizontalOptions="End" Command="{Binding SaveChangesCommand}"></Button>
+  </StackLayout>
+</ContentPage>

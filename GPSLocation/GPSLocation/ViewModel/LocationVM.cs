@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GPSLocation.Model.Entities;
 using GPSLocation.Utils;
+using GPSLocation.View;
 using Plugin.Geolocator;
 using Plugin.Geolocator.Abstractions;
 using Xamarin.Forms;
@@ -73,6 +74,7 @@ namespace GPSLocation.ViewModel
 
         public Command StartSearchGPSCommand { get; set; }
         public Command StopSearchGPSCommand { get; set; }
+        public Command GoToSettingsPageCommand { get; set; }
 
         public LocationVM()
         {
@@ -87,6 +89,7 @@ namespace GPSLocation.ViewModel
             IsStoppedGPSSearch = false;
             StartSearchGPSCommand = new Command((obj) => StartSearchGPS());
             StopSearchGPSCommand = new Command((obj) => StopSearchGPS());
+            GoToSettingsPageCommand = new Command((obj) => GoToSettingsPage());
         }
 
         private void ReinitGPSVariables()
@@ -183,9 +186,15 @@ namespace GPSLocation.ViewModel
             }
         }
 
-        private async void StopSearchGPS()
+        private void StopSearchGPS()
         {
             IsStoppedGPSSearch = true;
         }
+
+        private void GoToSettingsPage()
+        {
+            App.Current.MainPage.Navigation.PushAsync(new SettingsPage());
+        }
+
     }
 }
