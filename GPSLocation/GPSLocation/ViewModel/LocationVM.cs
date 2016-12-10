@@ -90,6 +90,7 @@ namespace GPSLocation.ViewModel
             StartSearchGPSCommand = new Command((obj) => StartSearchGPS());
             StopSearchGPSCommand = new Command((obj) => StopSearchGPS());
             GoToSettingsPageCommand = new Command((obj) => GoToSettingsPage());
+            DisableStopButton(500);
         }
 
         private void ReinitGPSVariables()
@@ -194,6 +195,12 @@ namespace GPSLocation.ViewModel
         private void GoToSettingsPage()
         {
             App.Current.MainPage.Navigation.PushAsync(new SettingsPage());
+        }
+
+        private async Task DisableStopButton(int milliseconds)
+        {
+            await Task.Delay(milliseconds);
+            IsEnableStopButton = false;
         }
 
     }
