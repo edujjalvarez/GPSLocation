@@ -54,6 +54,7 @@ namespace GPSLocation.ViewModel
                 }
                 Settings.SearchTimeInMinutes = tempSearchTime;
                 Settings.DesiredAccuracy = tempAccuracy;
+                //TODO Investigar como implemenar TOAST
                 //App.Current.MainPage.DisplayAlert("Notificación", "Ajustes guardados correctamente", "Aceptar");
                 App.Current.MainPage.SendBackButtonPressed();
             }
