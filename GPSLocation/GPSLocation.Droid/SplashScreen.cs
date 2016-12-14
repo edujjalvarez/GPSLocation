@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
 using Android.Support.V7.App;
@@ -14,7 +15,7 @@ using Android.Widget;
 
 namespace GPSLocation.Droid
 {
-    [Activity(Theme = "@style/MyTheme.Splash", Label = "GPSLocation", MainLauncher = true, NoHistory = true)]
+    [Activity(Theme = "@style/MyTheme.Splash", Label = "GPSLocation", MainLauncher = true, NoHistory = true, ScreenOrientation = ScreenOrientation.Portrait)]
     public class SplashScreen : AppCompatActivity
     {
         static readonly string TAG = "SplashActivity";
