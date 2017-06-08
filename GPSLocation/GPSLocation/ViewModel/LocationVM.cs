@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using GPSLocation.Model;
 using GPSLocation.Model.Entities;
+using GPSLocation.Services;
 using GPSLocation.Utils;
 using GPSLocation.View;
 using Plugin.Geolocator;
@@ -72,9 +75,24 @@ namespace GPSLocation.ViewModel
             set { _imageIndicator = value; OnPropertyChanged(); }
         }
 
+        private bool _wasFoundLocation = false;
+        public bool WasFoundLocation
+        {
+            get { return _wasFoundLocation; }
+            set { _wasFoundLocation = value; OnPropertyChanged(); }
+        }
+
+        private string _description = "";
+        public string Description
+        {
+            get { return _description; }
+            set { _description = value; OnPropertyChanged(); }
+        }
+
         public Command StartSearchGPSCommand { get; set; }
         public Command StopSearchGPSCommand { get; set; }
         public Command GoToSettingsPageCommand { get; set; }
+        public ICommand SaveCommand => new Command(async () => await SaveAsync());
 
         public LocationVM()
         {
@@ -82,6 +100,7 @@ namespace GPSLocation.ViewModel
             IsBusy = false;
             IsEnableStartButton = true;
             IsEnableStopButton = false;
+            WasFoundLocation = false;
             LngX = 0;
             LatY = 0;
             Accuracy = 0.00;
@@ -98,6 +117,7 @@ namespace GPSLocation.ViewModel
             IsBusy = true;
             IsEnableStartButton = false;
             IsEnableStopButton = false;
+            WasFoundLocation = false;
             LngX = 0;
             LatY = 0;
             Accuracy = 0.00;
@@ -163,6 +183,7 @@ namespace GPSLocation.ViewModel
                         {
                             ImageIndicator = "sgreen.png";
                             IsEnableStopButton = true;
+                            WasFoundLocation = true;
                         }
                     }
                     else
@@ -176,6 +197,7 @@ namespace GPSLocation.ViewModel
                             {
                                 ImageIndicator = "sgreen.png";
                                 IsEnableStopButton = true;
+                                WasFoundLocation = true;
                             }
                         }
                     }
@@ -201,6 +223,24 @@ namespace GPSLocation.ViewModel
         {
             await Task.Delay(milliseconds);
             IsEnableStopButton = false;
+        }
+
+        private async Task SaveAsync()
+        {
+            var location = new Location
+            {
+                Id = Guid.NewGuid().ToString(),
+                Description = Description,
+                Latitude = LatY,
+                Longitude = LngX,
+                Image = "",
+            };
+
+            await GPSLocationMobileService.Instance.
+                AddOrUpdateLocationAsync(location);
+
+            WasFoundLocation = false;
+            await Application.Current.MainPage.DisplayAlert("Notificación", "Ubicación guardada correctamente.", "Aceptar");
         }
 
     }
