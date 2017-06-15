@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GPSLocation.View.LocationsView"
+             Title="Ubicaciones">
+  
+  <StackLayout BackgroundColor="#EEEFF3" Orientation="Vertical" VerticalOptions="FillAndExpand">
+    <ActivityIndicator IsRunning="{Binding Loading}" IsVisible="{Binding Loading}" Color="#FF5353"></ActivityIndicator>
+    <Grid Padding="10, 5, 10, 2" BackgroundColor="#EEEFF3" VerticalOptions="FillAndExpand">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="1*" />
+        <RowDefinition Height="9*" />
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="2.5*" />
+        <ColumnDefinition Width="2.5*" />
+        <ColumnDefinition Width="2.5*" />
+        <ColumnDefinition Width="2.5*" />
+      </Grid.ColumnDefinitions>
+      <!-- Fila 0 -->
+      <SearchBar
+        x:Name="BtnLocationSearch"
+        Grid.Row="0"
+        Grid.Column="0"
+        Grid.ColumnSpan="4"
+        Placeholder="Buscar ubicación..."
+        TextChanged="BtnLocationSearch_TextChanged"
+        TextColor="#FFFFFF"
+        BackgroundColor="#7D848C"/>
+      <!-- Fila 1 -->
+      <ListView x:Name="LvLocations" ItemsSource="{Binding Locations}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" RowHeight="110" SeparatorColor="Transparent" ItemTapped="LvLocations_ItemTapped" ItemSelected="LvLocations_ItemSelected" >
+        <ListView.ItemTemplate>
+          <DataTemplate>
+            <ViewCell>
+              <Grid BackgroundColor="#FFFFFF" Margin="0, 0, 0, 10" Padding="5, 0, 5, 0">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Label
+                  Text="{Binding Description}"
+                  Grid.Row="0"
+                  Grid.Column="0"
+                  VerticalOptions="Fill"
+                  FontSize="16"
+                  FontAttributes="Bold"
+                  TextColor="#2D2D30"/>
+                <Label
+                  Text="{Binding Latitude}"
+                  Grid.Row="1"
+                  Grid.Column="0"
+                  VerticalOptions="Fill"
+                  FontSize="10"
+                  FontAttributes="Bold"
+                  TextColor="#2D2D30"/>
+                <Label
+                  Text="{Binding Longitude}"
+                  Grid.Row="2"
+                  Grid.Column="0"
+                  VerticalOptions="Fill"
+                  FontSize="10"
+                  FontAttributes="Bold"
+                  TextColor="#2D2D30"/>
+              </Grid>
+            </ViewCell>
+          </DataTemplate>
+        </ListView.ItemTemplate>
+      </ListView>
+    </Grid>
+  </StackLayout>
+
+</ContentPage>

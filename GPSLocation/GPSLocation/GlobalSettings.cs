@@ -2,6 +2,6 @@
 {
     public static class GlobalSettings
     {
-        public const string AzureUrl = "http://gpslocation.azurewebsites.net";
+        public const string AzureUrl = "http://gpslocationsnode.azurewebsites.net";
     }
 }

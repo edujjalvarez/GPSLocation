@@ -92,6 +92,7 @@ namespace GPSLocation.ViewModel
         public Command StartSearchGPSCommand { get; set; }
         public Command StopSearchGPSCommand { get; set; }
         public Command GoToSettingsPageCommand { get; set; }
+        public Command GoToLocationsViewCommand { get; set; }
         public ICommand SaveCommand => new Command(async () => await SaveAsync());
 
         public LocationVM()
@@ -109,6 +110,7 @@ namespace GPSLocation.ViewModel
             StartSearchGPSCommand = new Command((obj) => StartSearchGPS());
             StopSearchGPSCommand = new Command((obj) => StopSearchGPS());
             GoToSettingsPageCommand = new Command((obj) => GoToSettingsPage());
+            GoToLocationsViewCommand = new Command((obj) => GoToLocationsView());
             DisableStopButton(500);
         }
 
@@ -219,6 +221,11 @@ namespace GPSLocation.ViewModel
             App.Current.MainPage.Navigation.PushAsync(new SettingsPage());
         }
 
+        private void GoToLocationsView()
+        {
+            App.Current.MainPage.Navigation.PushAsync(new LocationsView());
+        }
+
         private async Task DisableStopButton(int milliseconds)
         {
             await Task.Delay(milliseconds);
@@ -229,17 +236,14 @@ namespace GPSLocation.ViewModel
         {
             var location = new Location
             {
-                Id = Guid.NewGuid().ToString(),
                 Description = Description,
                 Latitude = LatY,
                 Longitude = LngX,
                 Image = "",
             };
-
-            await GPSLocationMobileService.Instance.
-                AddOrUpdateLocationAsync(location);
-
+            await GPSLocationMobileService.Instance.AddOrUpdateLocationAsync(location);
             WasFoundLocation = false;
+            await GPSLocationMobileService.Instance.GetLocationItemsAsync(true);
             await Application.Current.MainPage.DisplayAlert("Notificación", "Ubicación guardada correctamente.", "Aceptar");
         }
 

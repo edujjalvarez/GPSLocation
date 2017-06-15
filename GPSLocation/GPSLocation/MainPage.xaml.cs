@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GPSLocation.Services;
 using GPSLocation.ViewModel;
 using Xamarin.Forms;
 

@@ -1,5 +1,8 @@
-﻿using System;
+﻿#define OFFLINE_SYNC_ENABLED
+
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.MobileServices;
@@ -17,6 +20,19 @@ namespace GPSLocation.Services
         private IMobileServiceSyncTable<Location> _locationTable;
         private static GPSLocationMobileService _instance;
 
+        public GPSLocationMobileService()
+        {
+            _client = new MobileServiceClient(GlobalSettings.AzureUrl);
+
+            var store = new MobileServiceSQLiteStore("gpslocation.db");
+            store.DefineTable<Location>();
+
+            //Initializes the SyncContext using the default IMobileServiceSyncHandler.
+            _client.SyncContext.InitializeAsync(store);
+
+            _locationTable = _client.GetSyncTable<Location>();
+        }
+
         public static GPSLocationMobileService Instance
         {
             get
@@ -25,54 +41,40 @@ namespace GPSLocation.Services
                 {
                     _instance = new GPSLocationMobileService();
                 }
-
                 return _instance;
-            }
-        }
-
-        public async Task InitializeAsync()
-        {
-            if (_client != null)
-                return;
-
-            // Inicialización de SQLite local
-            var store = new MobileServiceSQLiteStore("gpslocation.db");
-            store.DefineTable<Location>();
-
-            _client = new MobileServiceClient(GlobalSettings.AzureUrl);
-            _locationTable = _client.GetSyncTable<Location>();
-
-            //Inicializa the utilizando IMobileServiceSyncHandler.
-            await _client.SyncContext.InitializeAsync(store,
-                new MobileServiceSyncHandler());
-
-            if (CrossConnectivity.Current.IsConnected)
-            {
-                try
-                {
-                    // Subir cambios a la base de datos remota
-                    await _client.SyncContext.PushAsync();
-
-                    await _locationTable.PullAsync(
-                        "allLocationItems", _locationTable.CreateQuery());
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("Exception: {0}", ex.Message);
-                }
             }
         }
 
         public async Task<IEnumerable<Location>> ReadLocationsAsync()
         {
-            await InitializeAsync();
             return await _locationTable.ReadAsync();
+        }
+
+        public async Task<ObservableCollection<Location>> GetLocationItemsAsync(bool syncItems = false)
+        {
+            try
+            {
+                if (syncItems)
+                {
+                    await SyncAsync();
+                }
+                IEnumerable<Location> items = await _locationTable.ToEnumerableAsync();
+
+                return new ObservableCollection<Location>(items);
+            }
+            catch (MobileServiceInvalidOperationException msioe)
+            {
+                Debug.WriteLine(@"Invalid sync operation: {0}", msioe.Message);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(@"Sync error: {0}", e.Message);
+            }
+            return null;
         }
 
         public async Task AddOrUpdateLocationAsync(Location location)
         {
-            await InitializeAsync();
-
             if (string.IsNullOrEmpty(location.Id))
             {
                 await _locationTable.InsertAsync(location);
@@ -81,70 +83,53 @@ namespace GPSLocation.Services
             {
                 await _locationTable.UpdateAsync(location);
             }
-
-            await SynchronizeLocationAsync(location.Id);
         }
 
         public async Task DeleteLocationAsync(Location location)
         {
-            await InitializeAsync();
-
             await _locationTable.DeleteAsync(location);
-
-            await SynchronizeLocationAsync(location.Id);
         }
 
-        private async Task SynchronizeLocationAsync(string xamagramItemId)
+        public async Task SyncAsync()
         {
-            if (!CrossConnectivity.Current.IsConnected)
-                return;
+            ReadOnlyCollection<MobileServiceTableOperationError> syncErrors = null;
 
             try
             {
-                // Subir cambios a la base de datos remota
                 await _client.SyncContext.PushAsync();
 
-                // El primer parámetro es el nombre de la query utilizada intermanente por el client SDK para implementar sync.
-                // Utiliza uno diferente por cada query en la App
-                await _locationTable.PullAsync("syncLocationItem" + xamagramItemId,
-                    _locationTable.Where(r => r.Id == xamagramItemId));
+                await _locationTable.PullAsync(
+                    //The first parameter is a query name that is used internally by the client SDK to implement incremental sync.
+                    //Use a different query name for each unique query in your program
+                    "allLocationItems",
+                    _locationTable.CreateQuery());
             }
-            catch (MobileServicePushFailedException ex)
+            catch (MobileServicePushFailedException exc)
             {
-                if (ex.PushResult != null)
+                if (exc.PushResult != null)
                 {
-                    foreach (var result in ex.PushResult.Errors)
-                    {
-                        await ResolveErrorAsync(result);
-                    }
+                    syncErrors = exc.PushResult.Errors;
                 }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("Excepción: {0}", ex.Message);
-            }
-        }
 
-        private async Task ResolveErrorAsync(MobileServiceTableOperationError result)
-        {
-            // Ignoramos si no podemos validar ambas partes.
-            if (result.Result == null || result.Item == null)
-                return;
-
-            var serverItem = result.Result.ToObject<Location>();
-            var localItem = result.Item.ToObject<Location>();
-
-            if (serverItem.Description == localItem.Description
-                && serverItem.Id == localItem.Id)
+            // Simple error/conflict handling. A real application would handle the various errors like network conditions,
+            // server conflicts and others via the IMobileServiceSyncHandler.
+            if (syncErrors != null)
             {
-                // Los elementos sin iguales, ignoramos el conflicto
-                await result.CancelAndDiscardItemAsync();
-            }
-            else
-            {
-                // Para nosotros, gana el cliente
-                localItem.AzureVersion = serverItem.AzureVersion;
-                await result.UpdateOperationAsync(JObject.FromObject(localItem));
+                foreach (var error in syncErrors)
+                {
+                    if (error.OperationKind == MobileServiceTableOperationKind.Update && error.Result != null)
+                    {
+                        //Update failed, reverting to server's copy.
+                        await error.CancelAndUpdateItemAsync(error.Result);
+                    }
+                    else
+                    {
+                        // Discard local change.
+                        await error.CancelAndDiscardItemAsync();
+                    }
+                    Debug.WriteLine(@"Error executing sync operation. Item: {0} ({1}). Operation discarded.", error.TableName, error.Item["id"]);
+                }
             }
         }
     }

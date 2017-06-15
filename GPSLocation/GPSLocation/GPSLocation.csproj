@@ -50,7 +50,11 @@
     <Compile Include="Utils\Log.cs" />
     <Compile Include="Utils\Settings.cs" />
     <Compile Include="ViewModel\LocationVM.cs" />
+    <Compile Include="ViewModel\LocationsViewModel.cs" />
     <Compile Include="ViewModel\SettingsPageVM.cs" />
+    <Compile Include="View\LocationsView.xaml.cs">
+      <DependentUpon>LocationsView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\SettingsPage.xaml.cs">
       <DependentUpon>SettingsPage.xaml</DependentUpon>
     </Compile>
@@ -145,6 +149,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="View\SettingsPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="View\LocationsView.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>

@@ -13,6 +13,13 @@
                     Android="ic_settings_white_24dp.png" />
       </ToolbarItem.Icon>
     </ToolbarItem>
+    <ToolbarItem x:Name="GoToLocationsView" Command="{Binding GoToLocationsViewCommand}" Order="Primary" Priority="0">
+      <ToolbarItem.Icon>
+        <OnPlatform x:TypeArguments="FileImageSource"
+                    WinPhone="Assets/Settings-02.png"
+                    Android="ic_settings_white_24dp.png" />
+      </ToolbarItem.Icon>
+    </ToolbarItem>
   </ContentPage.ToolbarItems>
 
   <!-- ESTA ES LA VERSION DE DESARROLLO (Branch develop) -->
@@ -74,7 +81,7 @@
       <StackLayout Margin="10" Orientation="Vertical" BackgroundColor="Gray" Padding="5" IsVisible="{Binding WasFoundLocation}">
         <Entry Text="{Binding Description, Mode=TwoWay}" Placeholder="Descripción" TextColor="White" />
         <StackLayout Orientation="Horizontal">
-          <Button Text="Tomar fotografía" HorizontalOptions="Start" BackgroundColor="#E71F63" TextColor="White"/>
+          <!--<Button Text="Tomar fotografía" HorizontalOptions="Start" BackgroundColor="#E71F63" TextColor="White"/>-->
           <Button Text="Guardar" HorizontalOptions="End" BackgroundColor="#E71F63" TextColor="White" Command="{Binding SaveCommand}"/>
         </StackLayout>
       </StackLayout>
