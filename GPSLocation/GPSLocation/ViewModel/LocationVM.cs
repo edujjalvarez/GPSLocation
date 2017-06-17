@@ -9,8 +9,14 @@ using GPSLocation.Model.Entities;
 using GPSLocation.Services;
 using GPSLocation.Utils;
 using GPSLocation.View;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Plugin.Geolocator;
 using Plugin.Geolocator.Abstractions;
+using Plugin.Media;
+using Plugin.Media.Abstractions;
+using Plugin.Permissions;
+using Plugin.Permissions.Abstractions;
 using Xamarin.Forms;
 
 namespace GPSLocation.ViewModel
@@ -18,6 +24,8 @@ namespace GPSLocation.ViewModel
     public class LocationVM : ObservableBaseObject
     {
         private static string _tag = "LocationVM";
+        private MediaFile _photoMediaFile;
+        private Location _location;
 
         private double lngX;
         public double LngX
@@ -40,11 +48,18 @@ namespace GPSLocation.ViewModel
             set { accuracy = value; OnPropertyChanged(); }
         }
 
-        private bool _isBusy = false;
-        public bool IsBusy
+        private bool _isLoading = false;
+        public bool IsLoading
         {
-            get { return _isBusy; }
-            set { _isBusy = value; OnPropertyChanged(); }
+            get { return _isLoading; }
+            set { _isLoading = value; OnPropertyChanged(); }
+        }
+
+        private string _loadingText = "";
+        public string LoadingText
+        {
+            get { return _loadingText; }
+            set { _loadingText = value; OnPropertyChanged(); }
         }
 
         private bool _isEnableStartButton = true;
@@ -93,12 +108,84 @@ namespace GPSLocation.ViewModel
         public Command StopSearchGPSCommand { get; set; }
         public Command GoToSettingsPageCommand { get; set; }
         public Command GoToLocationsViewCommand { get; set; }
-        public ICommand SaveCommand => new Command(async () => await SaveAsync());
+        public ICommand SaveLocationCommand => new Command(async () => await SaveLocationAsync());
+        public ICommand TakePhotoCommand => new Command(async () => await TakePhotoAsync());
+
+        private async Task TakePhotoAsync()
+        {
+            try
+            {
+                var cameraPermission = await CrossPermissions.Current.CheckPermissionStatusAsync(Permission.Camera);
+                if (cameraPermission != PermissionStatus.Granted)
+                {
+                    if (await CrossPermissions.Current.ShouldShowRequestPermissionRationaleAsync(Permission.Camera))
+                    {
+                        await App.Current.MainPage.DisplayAlert("Atención", "App1 necesita permiso para acceder a la cámara", "OK");
+                    }
+
+                    var permissionResults = await CrossPermissions.Current.RequestPermissionsAsync(new[] { Permission.Camera });
+                    cameraPermission = permissionResults[Permission.Camera];
+                }
+
+                if (cameraPermission != PermissionStatus.Granted && cameraPermission != PermissionStatus.Unknown)
+                {
+                    await App.Current.MainPage.DisplayAlert("Error", "Permiso de cámara denegado.", "OK");
+                    return;
+                }
+
+                await CrossMedia.Current.Initialize();
+
+                if (!CrossMedia.Current.IsCameraAvailable || !CrossMedia.Current.IsTakePhotoSupported)
+                {
+                    await App.Current.MainPage.DisplayAlert("Error", "Cámara no disponible.", "OK");
+                    return;
+                }
+
+                IsLoading = true;
+                LoadingText = "Abriendo cámara...";
+
+                string photoFileName = Guid.NewGuid() + ".jpg";
+                var file = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
+                {
+                    //Directory = "xamarin",
+                    SaveToAlbum = true,
+                    Name = photoFileName,
+                    CompressionQuality = 92,
+                    PhotoSize = PhotoSize.Small
+                });
+
+                LoadingText = "Guardando foto...";
+
+                if (file == null)
+                    return;
+
+                Log.GetInstance().Print(_tag, "BtnTomarFotoClick >>> file.AlbumPath = {0}", file.AlbumPath);
+                Log.GetInstance().Print(_tag, "BtnTomarFotoClick >>> file.Path = {0}", file.Path);
+
+                _photoMediaFile = file;
+                
+                CloudStorageAccount csa = CloudStorageAccount.Parse(
+                    "YOUR_AZURE_STORAGE_ACCOUNT_CONNECTION_STRING");
+                CloudBlobClient blobClient = csa.CreateCloudBlobClient();
+                CloudBlobContainer blobContainer = blobClient.GetContainerReference("xamarin");
+                CloudBlockBlob blockBlob = blobContainer.GetBlockBlobReference(photoFileName);
+                await blockBlob.UploadFromStreamAsync(_photoMediaFile.GetStream());
+                _location.Image = blockBlob.Uri.ToString();
+                IsLoading = false;
+                LoadingText = "";
+                await App.Current.MainPage.DisplayAlert("Notificación", "Foto guardada correctamente.", "OK");
+            }
+            catch (Exception ex)
+            {
+                await App.Current.MainPage.DisplayAlert("Error", ex.Message, "OK");
+            }
+
+        }
 
         public LocationVM()
         {
             Log.GetInstance().Print(_tag, "LocationVM() >>> Se llama al constructor.");
-            IsBusy = false;
+            IsLoading = false;
             IsEnableStartButton = true;
             IsEnableStopButton = false;
             WasFoundLocation = false;
@@ -116,7 +203,7 @@ namespace GPSLocation.ViewModel
 
         private void ReinitGPSVariables()
         {
-            IsBusy = true;
+            IsLoading = true;
             IsEnableStartButton = false;
             IsEnableStopButton = false;
             WasFoundLocation = false;
@@ -129,8 +216,9 @@ namespace GPSLocation.ViewModel
 
         private async void StartSearchGPS()
         {
-            if (!IsBusy)
+            if (!IsLoading)
             {
+                LoadingText = "Buscando...";
                 ReinitGPSVariables();
                 int precision = Settings.DesiredAccuracy;
                 Log.GetInstance().Print(_tag, "StartSearchGPS() >>> Precisión deseada = {0}", precision);
@@ -138,7 +226,7 @@ namespace GPSLocation.ViewModel
                 if (!locator.IsGeolocationAvailable)
                 {
                     await App.Current.MainPage.DisplayAlert("Error", "Tu dispositivo no tiene soporte GPS", "Aceptar");
-                    IsBusy = false;
+                    IsLoading = false;
                     IsEnableStartButton = true;
                     IsEnableStopButton = false;
                     IsStoppedGPSSearch = false;
@@ -147,12 +235,13 @@ namespace GPSLocation.ViewModel
                 if (!locator.IsGeolocationEnabled)
                 {
                     await App.Current.MainPage.DisplayAlert("Error", "GPS no activado", "Aceptar");
-                    IsBusy = false;
+                    IsLoading = false;
                     IsEnableStartButton = true;
                     IsEnableStopButton = false;
                     IsStoppedGPSSearch = false;
                     return;
                 }
+                _location = new Location();
                 locator.DesiredAccuracy = precision;
                 int searchTimeInSeconds = Settings.SearchTimeInMinutes*60;
                 DateTime startDateTime = DateTime.Now;
@@ -204,7 +293,7 @@ namespace GPSLocation.ViewModel
                         }
                     }
                 }
-                IsBusy = false;
+                IsLoading = false;
                 IsEnableStartButton = true;
                 IsEnableStopButton = false;
                 IsStoppedGPSSearch = false;
@@ -213,6 +302,7 @@ namespace GPSLocation.ViewModel
 
         private void StopSearchGPS()
         {
+            LoadingText = "Deteniendo búsqueda...";
             IsStoppedGPSSearch = true;
         }
 
@@ -232,18 +322,23 @@ namespace GPSLocation.ViewModel
             IsEnableStopButton = false;
         }
 
-        private async Task SaveAsync()
+        private async Task SaveLocationAsync()
         {
-            var location = new Location
+            if (Description.Trim().Equals(""))
             {
-                Description = Description,
-                Latitude = LatY,
-                Longitude = LngX,
-                Image = "",
-            };
-            await GPSLocationMobileService.Instance.AddOrUpdateLocationAsync(location);
-            WasFoundLocation = false;
+                await App.Current.MainPage.DisplayAlert("Error", "Ingrese una descripción para la ubicación.", "Aceptar");
+                return;
+            }
+            IsLoading = true;
+            LoadingText = "Guardando ubicación...";
+            _location.Description = Description;
+            _location.Latitude = LatY;
+            _location.Longitude = LngX;
+            await GPSLocationMobileService.Instance.AddOrUpdateLocationAsync(_location);
             await GPSLocationMobileService.Instance.GetLocationItemsAsync(true);
+            WasFoundLocation = false;
+            IsLoading = false;
+            LoadingText = "";
             await Application.Current.MainPage.DisplayAlert("Notificación", "Ubicación guardada correctamente.", "Aceptar");
         }
 
